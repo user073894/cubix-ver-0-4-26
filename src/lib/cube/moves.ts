@@ -28,7 +28,7 @@ export function parseAlg(s: string): Move[] {
 
 export function invertMove(m: Move): Move {
   if (m.endsWith("2")) return m;
-  if (m.endsWith("'")) return m[0];
+  if (m.endsWith("'")) return m[0]!;
   return m + "'";
 }
 
