@@ -16,6 +16,9 @@ const buttonVariants = cva(
         secondary: "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        pill: "rounded-full bg-surface-raised text-foreground border border-border hover:bg-accent active:scale-95 transition-transform",
+        pillPrimary: "rounded-full bg-primary text-primary-foreground font-semibold hover:bg-primary/90 active:scale-95 transition-transform",
+        move: "rounded-xl bg-surface-raised text-foreground border border-border font-mono hover:bg-accent active:scale-95 transition-transform",
       },
       size: {
         default: "h-9 px-4 py-2",
