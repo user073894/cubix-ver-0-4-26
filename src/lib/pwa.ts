@@ -41,6 +41,12 @@ export async function registerOffline(onState: (s: OfflineState) => void) {
     onState("installing");
     await navigator.serviceWorker.register("/sw.js", { scope: "/" });
     await navigator.serviceWorker.ready;
+    if (!navigator.serviceWorker.controller) {
+      await new Promise<void>((res) => {
+        navigator.serviceWorker.addEventListener("controllerchange", () => res(), { once: true });
+        setTimeout(res, 4000);
+      });
+    }
     // Warm the page cache so the app shell opens offline.
     await fetch("/", { cache: "no-store" }).catch(() => {});
     onState("ready");
