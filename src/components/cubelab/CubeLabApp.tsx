@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Cube from "cubejs";
+import Cube from "@/vendor/cubejs";
 import { toast } from "sonner";
 import { Crosshair, Grid3x3, Pause, Play, SkipForward, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";

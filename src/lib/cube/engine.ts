@@ -371,7 +371,7 @@ export class CubeEngine {
       this.root.attach(m);
       m.position.set(Math.round(m.position.x), Math.round(m.position.y), Math.round(m.position.z));
       const e = new THREE.Matrix4().makeRotationFromQuaternion(m.quaternion).elements;
-      for (let i = 0; i < 16; i++) e[i] = Math.round(e[i]);
+      for (let i = 0; i < 16; i++) e[i] = Math.round(e[i]!);
       m.quaternion.setFromRotationMatrix(new THREE.Matrix4().fromArray(e));
     }
     this.root.remove(a.pivot);

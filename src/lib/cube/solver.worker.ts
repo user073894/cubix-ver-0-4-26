@@ -1,5 +1,5 @@
 /// <reference lib="webworker" />
-import Cube from "cubejs";
+import Cube from "@/vendor/cubejs";
 
 let ready = false;
 function ensure() {
