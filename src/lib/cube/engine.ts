@@ -136,9 +136,9 @@ export class CubeEngine {
           if (!x && !y && !z) continue;
           const g = new THREE.Group();
           g.position.set(x, y, z);
-          g.userData.home = new THREE.Vector3(x, y, z);
+          g.userData["home"] = new THREE.Vector3(x, y, z);
           const b = new THREE.Mesh(body, bodyMat);
-          b.userData.cubie = g;
+          b.userData["cubie"] = g;
           g.add(b);
           this.pickables.push(b);
           const faces: [string, number, THREE.Vector3][] = [
@@ -151,10 +151,10 @@ export class CubeEngine {
           ];
           for (const [name, v, n] of faces) {
             if (v !== 1) continue;
-            const s = new THREE.Mesh(sticker, stickerMats[name].clone());
+            const s = new THREE.Mesh(sticker, stickerMats[name]!.clone());
             s.position.copy(n).multiplyScalar(0.49);
             s.lookAt(n.clone().multiplyScalar(2));
-            s.userData.cubie = g;
+            s.userData["cubie"] = g;
             g.add(s);
             this.pickables.push(s);
           }
@@ -202,7 +202,7 @@ export class CubeEngine {
     }
     q.forEach((i) => i.resolve());
     for (const c of this.cubies) {
-      c.position.copy(c.userData.home);
+      c.position.copy(c.userData["home"]);
       c.quaternion.identity();
     }
     this.cb.onQueueChange?.(0);
@@ -249,7 +249,7 @@ export class CubeEngine {
       const i = a.indexOf(Math.max(...a));
       const normal = new THREE.Vector3();
       normal.setComponent(i, Math.sign(n.getComponent(i)));
-      this.gesture = { kind: "face", x: e.clientX, y: e.clientY, normal, point: hit.point.clone(), cubie: hit.object.userData.cubie };
+      this.gesture = { kind: "face", x: e.clientX, y: e.clientY, normal, point: hit.point.clone(), cubie: hit.object.userData["cubie"] };
     } else {
       this.gesture = { kind: "orbit", x: e.clientX, y: e.clientY, t: performance.now() };
     }
@@ -314,7 +314,8 @@ export class CubeEngine {
       return this.toScreen(w).sub(base);
     });
     // Decompose drag = a*s0 + b*s1
-    const [s0, s1] = screen;
+    const s0 = screen[0]!;
+    const s1 = screen[1]!;
     const det = s0.x * s1.y - s1.x * s0.y;
     if (Math.abs(det) < 1e-3) return null;
     const a = (drag.x * s1.y - s1.x * drag.y) / det;
@@ -324,7 +325,7 @@ export class CubeEngine {
     const ratio = Math.min(ca, cb) / Math.max(ca, cb);
     if (ratio > (easy ? 0.8 : 0.6)) return null; // ambiguous diagonal → do nothing
     const useA = ca > cb;
-    const d = tangents[useA ? 0 : 1].clone().multiplyScalar(Math.sign(useA ? a : b));
+    const d = tangents[useA ? 0 : 1]!.clone().multiplyScalar(Math.sign(useA ? a : b));
     const axisVec = new THREE.Vector3().crossVectors(g.normal, d);
     const ai = [0, 1, 2].find((i) => Math.round(axisVec.getComponent(i)) !== 0)! as Axis;
     const dir = Math.sign(axisVec.getComponent(ai)) as 1 | -1;

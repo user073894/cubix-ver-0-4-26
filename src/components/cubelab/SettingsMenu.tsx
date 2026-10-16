@@ -79,11 +79,11 @@ export function SettingsMenu({ open, onOpenChange, settings: s, update, offline,
           </Row>
           <div className="py-3">
             <div className="mb-3 flex justify-between text-sm"><span className="font-medium">Rotation sensitivity</span><span className="text-muted-foreground">{s.sensitivity.toFixed(1)}×</span></div>
-            <Slider min={0.4} max={2} step={0.1} value={[s.sensitivity]} onValueChange={([v]) => update({ sensitivity: v })} />
+            <Slider min={0.4} max={2} step={0.1} value={[s.sensitivity]} onValueChange={([v]) => update({ sensitivity: v ?? 1 })} />
           </div>
           <div className="py-3">
             <div className="mb-3 flex justify-between text-sm"><span className="font-medium">Animation speed</span><span className="text-muted-foreground">{s.speed.toFixed(1)}×</span></div>
-            <Slider min={0.5} max={3} step={0.1} value={[s.speed]} onValueChange={([v]) => update({ speed: v })} />
+            <Slider min={0.5} max={3} step={0.1} value={[s.speed]} onValueChange={([v]) => update({ speed: v ?? 1 })} />
           </div>
           <div className="flex flex-wrap gap-2 py-4">
             <Button variant="pill" onClick={onRecenter}>Recenter camera</Button>

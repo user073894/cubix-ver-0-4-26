@@ -121,7 +121,10 @@ export function CubeLabApp() {
 
   async function solve() {
     if (!solverReady) return;
-    if (logical.current.isSolved()) return toast("Cube is already solved");
+    if (logical.current.isSolved()) {
+      toast("Cube is already solved");
+      return;
+    }
     try {
       const moves = await solveState(logical.current.asString());
       setSolution({ moves, index: 0, playing: true });
@@ -136,7 +139,7 @@ export function CubeLabApp() {
     for (let i = from; i < moves.length; i++) {
       if (!playing.current) return;
       setSolution({ moves, index: i, playing: true });
-      await apply([moves[i]]);
+      await apply([moves[i]!]);
       setSolution({ moves, index: i + 1, playing: i + 1 < moves.length });
     }
     playing.current = false;
@@ -148,7 +151,7 @@ export function CubeLabApp() {
     if (!solution || solution.index >= solution.moves.length || playing.current) return;
     const i = solution.index;
     setSolution({ ...solution, index: i + 1 });
-    apply([solution.moves[i]]);
+    apply([solution.moves[i]!]);
   }
 
   function reset() {
