@@ -67,7 +67,7 @@ export class CubeEngine {
   private recenterFrom: THREE.Quaternion | null = null;
   private recenterT = 0;
   private dirty = true;
-  private clock = new THREE.Clock();
+  private clock = new THREE.Timer();
   private ro: ResizeObserver;
   private raycaster = new THREE.Raycaster();
   private highlight: { mats: THREE.MeshStandardMaterial[]; t: number } | null = null;
@@ -80,8 +80,8 @@ export class CubeEngine {
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
-    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.05;
+    this.renderer.toneMapping = THREE.NeutralToneMapping;
+    this.renderer.toneMappingExposure = 0.95;
     const canvas = this.renderer.domElement;
     canvas.style.touchAction = "none";
     canvas.style.display = "block";
@@ -382,7 +382,7 @@ export class CubeEngine {
 
   private tick = () => {
     if (this.disposed) return;
-    const dt = Math.min(this.clock.getDelta(), 0.05);
+    const dt = Math.min((this.clock.update(), this.clock.getDelta()), 0.05);
     if (!this.anim && this.queue.length) this.startNext();
     if (this.anim) {
       const a = this.anim;
