@@ -48,7 +48,14 @@ export async function registerOffline(onState: (s: OfflineState) => void) {
       });
     }
     // Warm the page cache so the app shell opens offline.
-    await fetch("/", { cache: "no-store" }).catch(() => {});
+    // Warm caches: the page itself plus every same-origin file already loaded
+    // before the service worker took control (JS chunks, worker, CSS, fonts, icons).
+    const urls = new Set<string>(["/", "/manifest.webmanifest", "/icons/icon-192.png", "/icons/icon-512.png", "/favicon.png"]);
+    for (const e of performance.getEntriesByType("resource")) {
+      const u = new URL(e.name);
+      if (u.origin === location.origin) urls.add(u.pathname);
+    }
+    await Promise.all([...urls].map((u) => fetch(u).catch(() => {})));
     onState("ready");
   } catch {
     onState("error");

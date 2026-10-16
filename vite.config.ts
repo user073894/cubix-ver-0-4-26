@@ -42,6 +42,12 @@ export default defineConfig({
               handler: "CacheFirst",
               options: { cacheName: "cubelab-assets" },
             },
+            {
+              urlPattern: ({ url, sameOrigin }) =>
+                sameOrigin && /\.(png|ico|svg|webmanifest|woff2?)$/.test(url.pathname),
+              handler: "StaleWhileRevalidate",
+              options: { cacheName: "cubelab-static" },
+            },
           ],
         },
       }),
