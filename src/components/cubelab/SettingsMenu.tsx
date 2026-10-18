@@ -11,7 +11,7 @@ import type { OfflineState } from "@/lib/pwa";
 import { OfflineStatus } from "./panels";
 import type { ReactNode } from "react";
 
-export const APP_VERSION = "1.0.0";
+export const APP_VERSION = "0.2.26";
 
 function Row({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
   return (
@@ -107,7 +107,7 @@ export function SettingsMenu({ open, onOpenChange, settings: s, update, offline,
           <Row label="Offline">
             <OfflineStatus state={offline} />
           </Row>
-          <Row label="Version"><span className="font-mono text-sm text-muted-foreground">cubelab {APP_VERSION}</span></Row>
+          <Row label="Version"><span className="font-mono text-sm text-muted-foreground">cubix {APP_VERSION}</span></Row>
         </div>
       </SheetContent>
     </Sheet>

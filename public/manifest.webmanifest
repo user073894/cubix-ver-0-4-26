@@ -1,6 +1,6 @@
 {
-  "name": "cubelab",
-  "short_name": "cubelab",
+  "name": "cubix",
+  "short_name": "cubix",
   "description": "Offline speedcubing timer with a realistic 3D Rubik's Cube.",
   "start_url": "/",
   "scope": "/",

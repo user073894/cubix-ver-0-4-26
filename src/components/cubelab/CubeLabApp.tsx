@@ -203,7 +203,7 @@ export function CubeLabApp() {
       {splash && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-background">
           <span className="text-4xl font-bold tracking-tight">
-            cube<span className="text-muted-foreground">lab</span>
+            cub<span className="text-muted-foreground">ix</span>
           </span>
         </div>
       )}

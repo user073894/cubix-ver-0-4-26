@@ -12,6 +12,7 @@
 ## Architecture rules
 - 3D cube is an imperative three.js engine (src/lib/cube/engine.ts) loaded via dynamic import from Cube3D; custom gestures need full control over raycasting vs. view rotation.
 - Logical cube state lives in vendored cubejs (src/vendor/cubejs, patched to avoid CJS `this`); every move updates logical state and engine queue together.
+- Preserve vendored cubejs initialization scripts, stylesheets, and error-capture registration in package sideEffects; production tree shaking must not remove required import-time setup.
 - Solver/scrambler run in a Web Worker (src/lib/cube/solver.worker.ts) because Kociemba table init blocks ~2s.
 - All data stays local (idb-keyval); no backend — the app must work offline.
 - Service worker via vite-plugin-pwa generateSW, registered only from src/lib/pwa.ts with preview/iframe guards; runtime caches warmed after first control.
