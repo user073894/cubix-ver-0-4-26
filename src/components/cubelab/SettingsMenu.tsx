@@ -107,7 +107,7 @@ export function SettingsMenu({ open, onOpenChange, settings: s, update, offline,
           <Row label="Offline">
             <OfflineStatus state={offline} />
           </Row>
-          <Row label="Version"><span className="font-mono text-sm text-muted-foreground">cubelab {APP_VERSION}</span></Row>
+          <Row label="Version"><span className="font-mono text-sm text-muted-foreground">cubix {APP_VERSION}</span></Row>
         </div>
       </SheetContent>
     </Sheet>

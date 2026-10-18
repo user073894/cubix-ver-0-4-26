@@ -4,9 +4,9 @@ import { CubeLabApp } from "@/components/cubelab/CubeLabApp";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "cubelab — Offline 3D Rubik's Cube & Speedcubing Timer" },
+      { title: "cubix — Offline 3D Rubik's Cube & Speedcubing Timer" },
       { name: "description", content: "Turn a realistic 3D Rubik's Cube, generate scrambles, solve, and time your solves with Ao5/Ao12 stats — fully offline." },
-      { property: "og:title", content: "cubelab — Speedcubing Timer & 3D Cube" },
+      { property: "og:title", content: "cubix — Speedcubing Timer & 3D Cube" },
       { property: "og:description", content: "Realistic 3D cube, scrambles, solver, timer and stats. Works offline." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

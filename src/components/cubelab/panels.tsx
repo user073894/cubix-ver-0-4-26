@@ -11,7 +11,7 @@ export function AppHeader({ offline, onSettings }: { offline: OfflineState; onSe
   return (
     <header className="flex items-center justify-between px-5 pt-[max(env(safe-area-inset-top),1rem)] pb-2">
       <h1 className="text-xl font-bold tracking-tight">
-        cube<span className="text-muted-foreground">lab</span>
+        cub<span className="text-muted-foreground">ix</span>
       </h1>
       <div className="flex items-center gap-2">
         <OfflineStatus state={offline} compact />
