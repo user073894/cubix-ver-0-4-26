@@ -1,13 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { Penalty } from "@/lib/stats";
+import { INSPECTION_DNF_MS, inspectionPenalty, type Penalty } from "@/lib/stats";
 
 export type TimerPhase = "idle" | "inspecting" | "running" | "stopped";
 export type Arm = "none" | "holding" | "ready";
 
+export interface FinishInfo {
+  ms: number; // raw solve time
+  penalty: Penalty; // inspection penalty
+  inspectionMs: number | null;
+}
+
 interface Opts {
   inspection: boolean;
   holdToStart: boolean;
-  onFinish: (ms: number, penalty: Penalty) => void;
+  onFinish: (info: FinishInfo) => void;
   onStart?: () => void;
 }
 
@@ -18,34 +24,41 @@ export function useTimer(opts: Opts) {
   o.current = opts;
   const [phase, setPhase] = useState<TimerPhase>("idle");
   const [arm, setArm] = useState<Arm>("none");
-  const [display, setDisplay] = useState(0); // ms, or inspection seconds remaining
+  const [display, setDisplay] = useState(0); // solve ms, or inspection elapsed ms
   const phaseRef = useRef<TimerPhase>("idle");
   const armRef = useRef<Arm>("none");
   const startRef = useRef(0);
   const inspectStart = useRef(0);
-  const inspectPenalty = useRef<Penalty>("none");
+  const inspectMs = useRef<number | null>(null);
   const holdTimer = useRef<number | null>(null);
   const justStopped = useRef(false);
   const raf = useRef<number | null>(null);
 
   const setP = (p: TimerPhase) => ((phaseRef.current = p), setPhase(p));
   const setA = (a: Arm) => ((armRef.current = a), setArm(a));
+  const clearHold = () => {
+    if (holdTimer.current) clearTimeout(holdTimer.current);
+    holdTimer.current = null;
+  };
 
   const loop = useCallback(() => {
     const now = performance.now();
     if (phaseRef.current === "running") setDisplay(now - startRef.current);
     if (phaseRef.current === "inspecting") {
       const el = now - inspectStart.current;
-      setDisplay(15000 - el);
-      if (el > 17000) {
+      setDisplay(el);
+      if (el >= INSPECTION_DNF_MS) {
+        clearHold();
         setP("stopped");
         setA("none");
         setDisplay(0);
-        o.current.onFinish(0, "dnf");
+        raf.current = null;
+        o.current.onFinish({ ms: 0, penalty: "dnf", inspectionMs: el });
         return;
       }
     }
-    raf.current = requestAnimationFrame(loop);
+    if (phaseRef.current === "running" || phaseRef.current === "inspecting") raf.current = requestAnimationFrame(loop);
+    else raf.current = null;
   }, []);
 
   const startLoop = () => {
@@ -58,7 +71,8 @@ export function useTimer(opts: Opts) {
     const ms = performance.now() - startRef.current;
     setP("stopped");
     setDisplay(ms);
-    o.current.onFinish(ms, inspectPenalty.current);
+    const ins = inspectMs.current;
+    o.current.onFinish({ ms, penalty: ins === null ? "none" : inspectionPenalty(ins), inspectionMs: ins });
   }, []);
 
   const press = useCallback(() => {
@@ -74,7 +88,7 @@ export function useTimer(opts: Opts) {
   }, [stop]);
 
   const release = useCallback(() => {
-    if (holdTimer.current) clearTimeout(holdTimer.current);
+    clearHold();
     if (justStopped.current) {
       justStopped.current = false;
       return;
@@ -87,23 +101,27 @@ export function useTimer(opts: Opts) {
     const now = performance.now();
     if (o.current.inspection && phaseRef.current !== "inspecting") {
       inspectStart.current = now;
-      inspectPenalty.current = "none";
+      inspectMs.current = null;
+      setDisplay(0);
       setP("inspecting");
       startLoop();
       return;
     }
-    if (phaseRef.current === "inspecting") {
-      const el = now - inspectStart.current;
-      inspectPenalty.current = el > 17000 ? "dnf" : el > 15000 ? "+2" : "none";
-    } else inspectPenalty.current = "none";
+    inspectMs.current = phaseRef.current === "inspecting" ? now - inspectStart.current : null;
+    if (inspectMs.current !== null && inspectMs.current >= INSPECTION_DNF_MS) return; // loop records DNF
     startRef.current = now;
     setP("running");
     o.current.onStart?.();
     startLoop();
   }, []);
 
+  /** Cancel any inspection or running solve without recording it. */
   const reset = useCallback(() => {
     if (raf.current) cancelAnimationFrame(raf.current);
+    raf.current = null;
+    clearHold();
+    justStopped.current = false;
+    inspectMs.current = null;
     setP("idle");
     setA("none");
     setDisplay(0);

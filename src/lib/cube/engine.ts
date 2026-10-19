@@ -273,7 +273,7 @@ export class CubeEngine {
     if (g.kind !== "face") return;
     const s = this.cb.getSettings();
     const drag = new THREE.Vector2(e.clientX - g.x, e.clientY - g.y);
-    if (drag.length() < (s.easy ? 14 : 9)) return;
+    if (drag.length() < (s.easy ? 14 : 8)) return;
     const move = this.resolveFaceGesture(g, drag, s.easy);
     this.gesture = { kind: "spent" };
     if (move) this.cb.onUserMove(move);

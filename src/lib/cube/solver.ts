@@ -29,5 +29,3 @@ function call(type: string, payload?: string): Promise<string> {
 
 export const initSolver = () => call("init").then(() => undefined);
 export const randomScramble = async (): Promise<Move[]> => parseAlg(await call("scramble"));
-export const solveState = async (facelets: string): Promise<Move[]> =>
-  parseAlg(await call("solve", facelets));
