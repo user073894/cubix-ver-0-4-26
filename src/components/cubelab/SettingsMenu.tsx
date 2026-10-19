@@ -11,7 +11,7 @@ import type { OfflineState } from "@/lib/pwa";
 import { OfflineStatus } from "./panels";
 import type { ReactNode } from "react";
 
-export const APP_VERSION = "0.2.26";
+export const APP_VERSION = "0.3.26";
 
 function Row({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
   return (
@@ -56,10 +56,10 @@ export function SettingsMenu({ open, onOpenChange, settings: s, update, offline,
           <SheetTitle>Settings</SheetTitle>
         </SheetHeader>
         <div className="divide-y divide-border px-1">
-          <Row label="Controls" hint={s.controls === "easy" ? "Swipe faces, drag outside to rotate" : "Move buttons always shown"}>
-            <Seg value={s.controls} options={[["easy", "Easy"], ["simple", "Simple"]]} onChange={(v) => update({ controls: v })} />
+          <Row label="Controls" hint={s.controls === "easy" ? "Forgiving swipes" : "Shorter, stricter swipes"}>
+            <Seg value={s.controls} options={[["easy", "Easy"], ["precise", "Precise"]]} onChange={(v) => update({ controls: v })} />
           </Row>
-          <Row label="15s inspection" hint="+2 after 15s, DNF after 17s">
+          <Row label="15s inspection" hint="WCA: +2 from 15s, DNF from 17s">
             <Switch checked={s.inspection} onCheckedChange={(v) => update({ inspection: v })} />
           </Row>
           <Row label="Hold to start" hint="Hold 0.3s until the timer turns green">

@@ -273,7 +273,7 @@ export class CubeEngine {
     if (g.kind !== "face") return;
     const s = this.cb.getSettings();
     const drag = new THREE.Vector2(e.clientX - g.x, e.clientY - g.y);
-    if (drag.length() < (s.easy ? 14 : 9)) return;
+    if (drag.length() < (s.easy ? 14 : 8)) return;
     const move = this.resolveFaceGesture(g, drag, s.easy);
     this.gesture = { kind: "spent" };
     if (move) this.cb.onUserMove(move);
@@ -351,10 +351,10 @@ export class CubeEngine {
   private startNext() {
     const item = this.queue.shift();
     if (!item) return;
-    const { axis, layer, quarters } = moveToTurn(item.move);
+    const { axis, layers, quarters } = moveToTurn(item.move);
     const pivot = new THREE.Group();
     this.root.add(pivot);
-    const members = this.cubies.filter((c) => Math.round(c.position.getComponent(axis)) === layer);
+    const members = this.cubies.filter((c) => layers.includes(Math.round(c.position.getComponent(axis))));
     members.forEach((m) => pivot.attach(m));
     const axisVec = new THREE.Vector3();
     axisVec.setComponent(axis, 1);

@@ -6,6 +6,18 @@ export interface Solve {
   penalty: Penalty;
   scramble: string;
   date: number;
+  inspection?: number | null; // inspection duration ms (null when inspection was off)
+  inspectionPenalty?: Penalty;
+}
+
+export const INSPECTION_PLUS2_MS = 15000;
+export const INSPECTION_DNF_MS = 17000;
+
+/** WCA inspection penalty from precise elapsed ms: <15s none, 15s to <17s +2, >=17s DNF. */
+export function inspectionPenalty(ms: number): Penalty {
+  if (ms >= INSPECTION_DNF_MS) return "dnf";
+  if (ms >= INSPECTION_PLUS2_MS) return "+2";
+  return "none";
 }
 
 /** Effective ms, or Infinity for DNF. */

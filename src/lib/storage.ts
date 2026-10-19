@@ -2,7 +2,7 @@ import { get, set } from "idb-keyval";
 import type { Solve } from "./stats";
 
 export interface Settings {
-  controls: "easy" | "simple";
+  controls: "easy" | "precise";
   inspection: boolean;
   holdToStart: boolean;
   timeFormat: "mm" | "ss";
@@ -11,7 +11,6 @@ export interface Settings {
   theme: "dark" | "light";
   sensitivity: number;
   speed: number;
-  showMovePanel: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -24,12 +23,14 @@ export const DEFAULT_SETTINGS: Settings = {
   theme: "dark",
   sensitivity: 1,
   speed: 1,
-  showMovePanel: false,
 };
 
 export async function loadSettings(): Promise<Settings> {
   try {
-    return { ...DEFAULT_SETTINGS, ...((await get("cubelab:settings")) ?? {}) };
+    const raw = { ...DEFAULT_SETTINGS, ...((await get("cubelab:settings")) ?? {}) } as Settings & { showMovePanel?: boolean };
+    delete raw.showMovePanel;
+    if (raw.controls !== "easy" && raw.controls !== "precise") raw.controls = "easy";
+    return raw;
   } catch {
     return DEFAULT_SETTINGS;
   }

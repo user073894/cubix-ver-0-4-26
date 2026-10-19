@@ -1,6 +1,6 @@
 {
   "name": "tanstack_start_ts",
-  "version": "0.2.26",
+  "version": "0.3.26",
   "private": true,
   "sideEffects": ["./src/vendor/cubejs/*.js", "**/*.css", "./src/lib/error-capture.ts"],
   "type": "module",
