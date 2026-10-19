@@ -3,7 +3,7 @@ import { Copy, RefreshCw, Trash2, WifiOff, Wifi, Settings2 } from "lucide-react"
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { FACES, type Move } from "@/lib/cube/moves";
+import type { Move } from "@/lib/cube/moves";
 import { averageOf, bestAverage, bestSingle, formatSolve, formatTime, type Penalty, type Solve } from "@/lib/stats";
 import type { OfflineState } from "@/lib/pwa";
 
@@ -44,11 +44,11 @@ export function OfflineStatus({ state, compact }: { state: OfflineState; compact
 export function ScrambleDisplay({ scramble, loading, onNew }: { scramble: Move[]; loading: boolean; onNew: () => void }) {
   const text = scramble.join(" ");
   return (
-    <div className="flex items-start gap-2 px-4">
-      <p className="min-h-[2.75rem] flex-1 text-center font-mono text-[15px] leading-relaxed sm:text-lg">
-        {loading ? <span className="text-muted-foreground">Preparing scrambler…</span> : text || <span className="text-muted-foreground">Tap Scramble to start</span>}
+    <div className="flex items-center gap-1 px-4">
+      <p className="line-clamp-2 flex-1 text-center font-mono text-sm leading-snug sm:text-base">
+        {loading ? <span className="text-muted-foreground">Preparing scrambler…</span> : text || <span className="text-muted-foreground">Press Scramble to start</span>}
       </p>
-      <div className="flex flex-col gap-1">
+      <div className="flex gap-0.5">
         <Button variant="ghost" size="icon" aria-label="New scramble" disabled={loading} onClick={onNew}>
           <RefreshCw className="size-4" />
         </Button>
@@ -62,22 +62,6 @@ export function ScrambleDisplay({ scramble, loading, onNew }: { scramble: Move[]
           <Copy className="size-4" />
         </Button>
       </div>
-    </div>
-  );
-}
-
-export function CubeMovePanel({ onMove, disabled }: { onMove: (m: Move) => void; disabled?: boolean }) {
-  return (
-    <div className="grid grid-cols-6 gap-1.5 px-4">
-      {FACES.map((f) => (
-        <div key={f} className="flex flex-col gap-1.5">
-          {[f, f + "'", f + "2"].map((m) => (
-            <Button key={m} variant="move" className="h-11 px-0 text-base" disabled={disabled} onClick={() => onMove(m)}>
-              {m}
-            </Button>
-          ))}
-        </div>
-      ))}
     </div>
   );
 }
@@ -138,7 +122,10 @@ export function SolveHistory({
               <DialogHeader>
                 <DialogTitle className="font-mono text-3xl">{formatSolve(open, format)}</DialogTitle>
               </DialogHeader>
-              <p className="text-xs text-muted-foreground">{new Date(open.date).toLocaleString()}</p>
+              <p className="text-xs text-muted-foreground">
+                {new Date(open.date).toLocaleString()} · raw {formatTime(open.time, format)}
+                {open.inspection != null && ` · inspection ${(open.inspection / 1000).toFixed(2)}s${open.inspectionPenalty && open.inspectionPenalty !== "none" ? ` (${open.inspectionPenalty.toUpperCase()})` : ""}`}
+              </p>
               <p className="rounded-xl bg-surface-raised p-3 font-mono text-sm">{open.scramble || "No scramble recorded"}</p>
               <div className="flex gap-2">
                 {(["none", "+2", "dnf"] as Penalty[]).map((p) => (
