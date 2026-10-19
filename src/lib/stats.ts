@@ -7,7 +7,7 @@ export interface Solve {
   scramble: string;
   date: number;
   inspection?: number | null; // inspection duration ms (null when inspection was off)
-  inspectionPenalty?: Penalty;
+  inspectionPenalty?: Penalty | undefined;
 }
 
 export const INSPECTION_PLUS2_MS = 15000;

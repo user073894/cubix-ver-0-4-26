@@ -29,7 +29,7 @@ describe("averages", () => {
 
 describe("moves", () => {
   it("R is negative quarter about +x", () => {
-    expect(moveToTurn("R")).toEqual({ axis: 0, layer: 1, quarters: -1 });
+    expect(moveToTurn("R")).toEqual({ axis: 0, layers: [1], quarters: -1 });
   });
   it("gesture mapping round-trips", () => {
     expect(turnToMove(0, 1, -1)).toBe("R");
