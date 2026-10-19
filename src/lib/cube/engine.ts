@@ -351,10 +351,10 @@ export class CubeEngine {
   private startNext() {
     const item = this.queue.shift();
     if (!item) return;
-    const { axis, layer, quarters } = moveToTurn(item.move);
+    const { axis, layers, quarters } = moveToTurn(item.move);
     const pivot = new THREE.Group();
     this.root.add(pivot);
-    const members = this.cubies.filter((c) => Math.round(c.position.getComponent(axis)) === layer);
+    const members = this.cubies.filter((c) => layers.includes(Math.round(c.position.getComponent(axis))));
     members.forEach((m) => pivot.attach(m));
     const axisVec = new THREE.Vector3();
     axisVec.setComponent(axis, 1);
