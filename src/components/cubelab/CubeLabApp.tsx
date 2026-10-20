@@ -155,6 +155,7 @@ export function CubeLabApp() {
       }
       if (e.key === "?") return e.preventDefault(), setTutorial(true);
       if (["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End"].includes(e.code)) return e.preventDefault();
+      if (settingsRef.current.timerOnly) return;
       const m = keyToMove(e, held);
       if (!m) return;
       e.preventDefault();
@@ -217,19 +218,19 @@ export function CubeLabApp() {
           </span>
         </div>
       )}
-      <div className="mx-auto flex h-full w-full max-w-3xl flex-col">
+      <div className="mx-auto flex h-full w-full max-w-3xl flex-col lg:max-w-none">
         <AppHeader offline={offline} onSettings={() => setSettingsOpen(true)} />
 
         <button
           type="button"
-          className="mx-auto flex shrink-0 touch-none select-none flex-col items-center px-6 py-1 outline-none"
+          className={`mx-auto flex touch-none ${settings.timerOnly ? "min-h-0 flex-1 w-full justify-center" : "shrink-0"} select-none flex-col items-center px-6 py-1 outline-none`}
           onPointerDown={(e) => (e.preventDefault(), t.press())}
           onPointerUp={() => t.release()}
           onPointerCancel={() => t.release()}
           onKeyDown={(e) => e.code === "Space" && e.preventDefault()}
           aria-label="Timer"
         >
-          <span className={`font-mono text-5xl font-bold tabular tracking-tight transition-colors sm:text-6xl ${timerColor}`}>{timerText}</span>
+          <span className={`font-mono font-bold tabular tracking-tight transition-colors ${settings.timerOnly ? "text-7xl sm:text-9xl lg:text-[12rem]" : "text-5xl sm:text-6xl"} ${timerColor}`}>{timerText}</span>
           <span className="mt-0.5 text-xs text-muted-foreground">{timerHint}</span>
         </button>
 
@@ -237,7 +238,7 @@ export function CubeLabApp() {
           <ScrambleDisplay scramble={scramble} loading={!solverReady} onNew={newScramble} />
         </div>
 
-        <div className="relative flex min-h-0 flex-1 items-center justify-center" style={{ containerType: "size" }}>
+        <div className={`relative min-h-0 flex-1 items-center justify-center ${settings.timerOnly ? "hidden" : "flex"}`} style={{ containerType: "size" }}>
           <div className="aspect-square" style={{ width: "min(100cqw, 100cqh, 640px)" }}>
             <Cube3D ref={cubeRef} settings={engineSettings} onUserMove={onUserMove} onReady={onCubeReady} />
           </div>
@@ -254,12 +255,12 @@ export function CubeLabApp() {
           </div>
         </div>
 
-        <div className="grid shrink-0 grid-cols-3 gap-2 px-4 pt-2 pb-[max(env(safe-area-inset-bottom),0.75rem)]">
+        <div className="grid shrink-0 grid-cols-3 gap-2 px-4 pt-2 pb-[max(env(safe-area-inset-bottom),0.75rem)] lg:px-8">
           <Button variant="pillPrimary" className="h-12" disabled={!solverReady} onClick={newScramble}>Scramble</Button>
           <Button variant="pill" className="h-12" onClick={() => setRecordsOpen(true)}>
             <BarChart3 className="size-4" /> Records
           </Button>
-          <Button variant="pill" className="h-12" onClick={reset}>Reset</Button>
+          <Button variant="pill" className="h-12" onClick={reset}>{settings.timerOnly ? "Cancel" : "Reset"}</Button>
         </div>
       </div>
 
