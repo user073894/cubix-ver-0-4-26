@@ -14,7 +14,7 @@ export function AppHeader({ offline, onSettings }: { offline: OfflineState; onSe
         cub<span className="text-muted-foreground">ix</span>
       </h1>
       <div className="flex items-center gap-2">
-        <OfflineStatus state={offline} compact />
+        {void offline}
         <Button variant="ghost" size="icon" aria-label="Settings" onClick={onSettings}>
           <Settings2 className="size-5" />
         </Button>

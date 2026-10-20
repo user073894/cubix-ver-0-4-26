@@ -78,3 +78,40 @@ export function rotateVec(v: [number, number, number], axis: Axis, quarters: num
   }
   return [x, y, z];
 }
+
+export type AxisMap = (worldAxis: Axis) => { axis: Axis; sign: 1 | -1 };
+const POS = ["R", "U", "F"];
+const NEG = ["L", "D", "B"];
+const SLICE = ["M", "E", "S"];
+const SLICE_NAT = [-1, -1, 1]; // M follows L, E follows D, S follows F
+const ROT = ["x", "y", "z"];
+
+/** Re-express a move pressed relative to the screen as the matching move on the cube's actual faces. */
+export function remapMove(m: Move, map: AxisMap): Move {
+  const match = MOVE_RE.exec(m);
+  if (!match) return m;
+  const base = match[1]!;
+  let suf = match[2] ?? "";
+  const flip = () => (suf = suf === "2" ? "2" : suf === "'" ? "" : "'");
+  const look = (axis: Axis, sign: number) => {
+    const r = map(axis);
+    return { axis: r.axis, sign: r.sign * sign };
+  };
+  const letter = base[0]!;
+  const wide = base.endsWith("w") ? "w" : "";
+  let pi = POS.indexOf(letter), ni = NEG.indexOf(letter);
+  if (pi >= 0 || ni >= 0) {
+    const r = look((pi >= 0 ? pi : ni) as Axis, pi >= 0 ? 1 : -1);
+    return (r.sign > 0 ? POS[r.axis] : NEG[r.axis]) + wide + suf;
+  }
+  const si = SLICE.indexOf(letter);
+  if (si >= 0) {
+    const r = look(si as Axis, SLICE_NAT[si]!);
+    if (r.sign !== SLICE_NAT[r.axis]) flip();
+    return SLICE[r.axis] + suf;
+  }
+  const ri = ROT.indexOf(letter);
+  const r = look(ri as Axis, 1);
+  if (r.sign < 0) flip();
+  return ROT[r.axis] + suf;
+}
