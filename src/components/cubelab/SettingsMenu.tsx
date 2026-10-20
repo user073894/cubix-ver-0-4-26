@@ -104,9 +104,7 @@ export function SettingsMenu({ open, onOpenChange, settings: s, update, offline,
               </AlertDialogContent>
             </AlertDialog>
           </div>
-          <Row label="Offline">
-            <OfflineStatus state={offline} />
-          </Row>
+          {void offline}{void OfflineStatus}
           <Row label="Version"><span className="font-mono text-sm text-muted-foreground">cubix {APP_VERSION}</span></Row>
         </div>
       </SheetContent>

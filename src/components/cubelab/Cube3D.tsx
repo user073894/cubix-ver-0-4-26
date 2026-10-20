@@ -6,6 +6,7 @@ export interface Cube3DHandle {
   enqueue: (m: Move[]) => Promise<void>;
   reset: () => void;
   recenter: () => void;
+  viewMove: (m: Move) => Move;
 }
 
 interface Props {
@@ -25,6 +26,7 @@ export const Cube3D = forwardRef<Cube3DHandle, Props>(function Cube3D(props, ref
     enqueue: (m) => engine.current?.enqueue(m) ?? Promise.resolve(),
     reset: () => engine.current?.reset(),
     recenter: () => engine.current?.recenter(),
+    viewMove: (m) => engine.current?.viewMove(m) ?? m,
   }));
 
   useEffect(() => {
