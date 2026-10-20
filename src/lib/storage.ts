@@ -4,6 +4,7 @@ import type { Solve } from "./stats";
 export interface Settings {
   controls: "easy" | "precise";
   inspection: boolean;
+  timerOnly: boolean;
   holdToStart: boolean;
   timeFormat: "mm" | "ss";
   sound: boolean;
@@ -16,6 +17,7 @@ export interface Settings {
 export const DEFAULT_SETTINGS: Settings = {
   controls: "easy",
   inspection: false,
+  timerOnly: false,
   holdToStart: true,
   timeFormat: "mm",
   sound: true,
