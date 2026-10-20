@@ -9,7 +9,7 @@ import type { OfflineState } from "@/lib/pwa";
 
 export function AppHeader({ offline, onSettings }: { offline: OfflineState; onSettings: () => void }) {
   return (
-    <header className="flex items-center justify-between px-5 pt-[max(env(safe-area-inset-top),1rem)] pb-2">
+    <header className="flex items-center justify-between px-5 lg:px-8 pt-[max(env(safe-area-inset-top),1rem)] pb-2">
       <h1 className="text-xl font-bold tracking-tight">
         cub<span className="text-muted-foreground">ix</span>
       </h1>
