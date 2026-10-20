@@ -99,7 +99,8 @@ export function remapMove(m: Move, map: AxisMap): Move {
   };
   const letter = base[0]!;
   const wide = base.endsWith("w") ? "w" : "";
-  let pi = POS.indexOf(letter), ni = NEG.indexOf(letter);
+  const pi = POS.indexOf(letter);
+  const ni = NEG.indexOf(letter);
   if (pi >= 0 || ni >= 0) {
     const r = look((pi >= 0 ? pi : ni) as Axis, pi >= 0 ? 1 : -1);
     return (r.sign > 0 ? POS[r.axis] : NEG[r.axis]) + wide + suf;

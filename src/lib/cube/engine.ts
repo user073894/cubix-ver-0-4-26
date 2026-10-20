@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
-import { moveToTurn, turnToMove, type Axis, type Move } from "./moves";
+import { moveToTurn, remapMove, turnToMove, type Axis, type Move } from "./moves";
 
 export interface EngineSettings {
   speed: number; // 0.5 .. 3
@@ -209,6 +209,19 @@ export class CubeEngine {
     this.dirty = true;
   }
 
+  /** Translate a screen-relative move (R = the face on the viewer's right) into the cube's real face. */
+  viewMove(m: Move): Move {
+    const inv = this.root.quaternion.clone().invert();
+    return remapMove(m, (axis) => {
+      const v = new THREE.Vector3();
+      v.setComponent(axis, 1);
+      v.applyQuaternion(inv);
+      const a = [Math.abs(v.x), Math.abs(v.y), Math.abs(v.z)];
+      const i = a.indexOf(Math.max(...a)) as Axis;
+      return { axis: i, sign: v.getComponent(i) >= 0 ? 1 : -1 };
+    });
+  }
+
   recenter() {
     this.velocity = { x: 0, y: 0 };
     this.recenterFrom = this.root.quaternion.clone();
@@ -359,7 +372,10 @@ export class CubeEngine {
     const axisVec = new THREE.Vector3();
     axisVec.setComponent(axis, 1);
     const speed = this.cb.getSettings().speed;
-    const duration = (Math.abs(quarters) === 2 ? 0.26 : 0.17) / speed;
+    // Speed up when moves pile up so fast typing (high TPS) never lags behind.
+    const backlog = this.queue.length;
+    const base = (Math.abs(quarters) === 2 ? 0.22 : 0.14) / speed;
+    const duration = backlog > 12 ? 0 : Math.max(0.025, base / (1 + backlog * 0.8));
     this.anim = { pivot, axis: axisVec, target: (quarters * Math.PI) / 2, elapsed: 0, duration, members, done: item.resolve };
   }
 
@@ -387,11 +403,19 @@ export class CubeEngine {
     if (this.anim) {
       const a = this.anim;
       a.elapsed += dt;
-      const t = Math.min(1, a.elapsed / a.duration);
+      const t = a.duration <= 0 ? 1 : Math.min(1, a.elapsed / a.duration);
       const ease = 1 - Math.pow(1 - t, 3);
       a.pivot.quaternion.setFromAxisAngle(a.axis, a.target * ease);
       this.dirty = true;
-      if (t >= 1) this.finishAnim();
+      if (t >= 1) {
+        this.finishAnim();
+        // Chain the next move in the same frame so queued moves don't wait a frame each.
+        let guard = 0;
+        while (this.queue.length > 12 && guard++ < 50) {
+          this.startNext();
+          this.finishAnim();
+        }
+      }
     }
     if (!this.gesture && (Math.abs(this.velocity.x) > 0.05 || Math.abs(this.velocity.y) > 0.05)) {
       this.rotateView(this.velocity.x, this.velocity.y);

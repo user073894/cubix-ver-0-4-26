@@ -30,6 +30,11 @@ export function CubeLabApp() {
   const [tutorial, setTutorial] = useState(false);
   const [lastMove, setLastMove] = useState<Move | null>(null);
   const cubeRef = useRef<Cube3DHandle>(null);
+  const mountedAt = useRef(Date.now());
+  const onCubeReady = useCallback(() => {
+    // Splash stays up for 5 seconds total.
+    setTimeout(() => setSplash(false), Math.max(0, 5000 - (Date.now() - mountedAt.current)));
+  }, []);
   const logical = useRef(new CubeState());
   const scrambleRef = useRef<Move[]>([]);
   scrambleRef.current = scramble;
@@ -154,7 +159,7 @@ export function CubeLabApp() {
       if (!m) return;
       e.preventDefault();
       if (e.repeat) return;
-      onUserMove(m);
+      onUserMove(cubeRef.current?.viewMove(m) ?? m);
     };
     const up = (e: KeyboardEvent) => {
       if (e.code === "KeyW") held.wide = false;
@@ -234,7 +239,7 @@ export function CubeLabApp() {
 
         <div className="relative flex min-h-0 flex-1 items-center justify-center" style={{ containerType: "size" }}>
           <div className="aspect-square" style={{ width: "min(100cqw, 100cqh, 640px)" }}>
-            <Cube3D ref={cubeRef} settings={engineSettings} onUserMove={onUserMove} onReady={() => setSplash(false)} />
+            <Cube3D ref={cubeRef} settings={engineSettings} onUserMove={onUserMove} onReady={onCubeReady} />
           </div>
           <span className="pointer-events-none absolute top-1 left-4 font-mono text-xs text-muted-foreground" aria-live="polite">
             {lastMove ?? ""}
