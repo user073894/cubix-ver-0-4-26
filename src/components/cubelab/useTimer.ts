@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { INSPECTION_DNF_MS, inspectionPenalty, type Penalty } from "@/lib/stats";
+import { inspectionPenalty, type Penalty } from "@/lib/stats";
 
 export type TimerPhase = "idle" | "inspecting" | "running" | "stopped";
 export type Arm = "none" | "holding" | "ready";
@@ -47,15 +47,6 @@ export function useTimer(opts: Opts) {
     if (phaseRef.current === "inspecting") {
       const el = now - inspectStart.current;
       setDisplay(el);
-      if (el >= INSPECTION_DNF_MS) {
-        clearHold();
-        setP("stopped");
-        setA("none");
-        setDisplay(0);
-        raf.current = null;
-        o.current.onFinish({ ms: 0, penalty: "dnf", inspectionMs: el });
-        return;
-      }
     }
     if (phaseRef.current === "running" || phaseRef.current === "inspecting") raf.current = requestAnimationFrame(loop);
     else raf.current = null;
@@ -74,6 +65,24 @@ export function useTimer(opts: Opts) {
     const ins = inspectMs.current;
     o.current.onFinish({ ms, penalty: ins === null ? "none" : inspectionPenalty(ins), inspectionMs: ins });
   }, []);
+
+  const startSolve = useCallback(() => {
+    const now = performance.now();
+    clearHold();
+    setA("none");
+    justStopped.current = false;
+    inspectMs.current = phaseRef.current === "inspecting" ? now - inspectStart.current : null;
+    startRef.current = now;
+    setDisplay(0);
+    setP("running");
+    o.current.onStart?.();
+    startLoop();
+  }, []);
+
+  /** Only intentional turns start a solve; orbiting and scrambles do not. */
+  const startOnMove = useCallback(() => {
+    if (phaseRef.current === "inspecting") startSolve();
+  }, [startSolve]);
 
   const press = useCallback(() => {
     if (phaseRef.current === "running") {
@@ -107,13 +116,8 @@ export function useTimer(opts: Opts) {
       startLoop();
       return;
     }
-    inspectMs.current = phaseRef.current === "inspecting" ? now - inspectStart.current : null;
-    if (inspectMs.current !== null && inspectMs.current >= INSPECTION_DNF_MS) return; // loop records DNF
-    startRef.current = now;
-    setP("running");
-    o.current.onStart?.();
-    startLoop();
-  }, []);
+    startSolve();
+  }, [startSolve]);
 
   /** Cancel any inspection or running solve without recording it. */
   const reset = useCallback(() => {
@@ -127,7 +131,10 @@ export function useTimer(opts: Opts) {
     setDisplay(0);
   }, []);
 
-  useEffect(() => () => void (raf.current && cancelAnimationFrame(raf.current)), []);
+  useEffect(() => () => {
+    if (raf.current) cancelAnimationFrame(raf.current);
+    clearHold();
+  }, []);
 
-  return { phase, arm, display, press, release, stop, reset };
+  return { phase, arm, display, press, release, stop, reset, startOnMove };
 }

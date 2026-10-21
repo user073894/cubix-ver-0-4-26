@@ -1,9 +1,11 @@
-# cubix 0.3.26
+# cubix
 - [x] Fix the published page's missing cube constructor.
 - [x] Update the app version to 0.3.26.
 - [x] Verify optimized cube logic, page loading, scramble/solve/reset, and saved timer results.
 - [x] Rename the visible app and installation metadata to cubix.
-- [ ] Unify standard face, slice, wide, and whole-cube moves and add keyboard controls.
-- [ ] Remove Solve/move buttons; center the fixed-height play screen and move records to an overlay.
-- [ ] Correct inspection boundaries, cancellation, recording, and persisted results.
-- [ ] Test mechanics/timing and verify desktop/mobile cube, timer, records, and reset.
+- [x] Unify standard face, slice, wide, and whole-cube moves and add keyboard controls.
+- [x] Remove Solve/move buttons; center the fixed-height play screen and move records to an overlay.
+- [x] Center scramble independently of icons and compact desktop bottom buttons.
+- [x] Start the solve on the first inspection turn and preserve 15/17-second penalties; test boundaries.
+- [x] Refine the playable cube appearance and smooth physical turns without skipped queue animations.
+- [x] Verify cube turns, timer records, and desktop/mobile layout.

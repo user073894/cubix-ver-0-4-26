@@ -100,6 +100,7 @@ export function CubeLabApp() {
 
   const onUserMove = useCallback(
     (m: Move) => {
+      timerRef.current.startOnMove();
       fb();
       setLastMove(m);
       apply([m]);
@@ -255,12 +256,12 @@ export function CubeLabApp() {
           </div>
         </div>
 
-        <div className="grid shrink-0 grid-cols-3 gap-2 px-4 pt-2 pb-[max(env(safe-area-inset-bottom),0.75rem)] lg:px-8">
-          <Button variant="pillPrimary" className="h-12" disabled={!solverReady} onClick={newScramble}>Scramble</Button>
-          <Button variant="pill" className="h-12" onClick={() => setRecordsOpen(true)}>
+        <div className="grid shrink-0 grid-cols-3 gap-2 px-4 pt-2 pb-[max(env(safe-area-inset-bottom),0.75rem)] lg:mx-auto lg:w-full lg:max-w-md lg:px-8">
+          <Button variant="pillPrimary" className="h-12 lg:h-9" disabled={!solverReady} onClick={newScramble}>Scramble</Button>
+          <Button variant="pill" className="h-12 lg:h-9" onClick={() => setRecordsOpen(true)}>
             <BarChart3 className="size-4" /> Records
           </Button>
-          <Button variant="pill" className="h-12" onClick={reset}>{settings.timerOnly ? "Cancel" : "Reset"}</Button>
+          <Button variant="pill" className="h-12 lg:h-9" onClick={reset}>{settings.timerOnly ? "Cancel" : "Reset"}</Button>
         </div>
       </div>
 
