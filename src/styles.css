@@ -75,6 +75,13 @@
 }
 
 :root {
+  --cube-right: #c9283e;
+  --cube-left: #ff7900;
+  --cube-up: #f6f6f2;
+  --cube-down: #ffda18;
+  --cube-front: #00a66a;
+  --cube-back: #1462d5;
+  --cube-body: #121316;
   --radius: 1rem;
   --background: oklch(0.13 0.004 270);
   --foreground: oklch(0.97 0 0);

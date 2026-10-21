@@ -15,13 +15,13 @@ export interface EngineCallbacks {
   getSettings: () => EngineSettings;
 }
 
-const STICKER_COLORS = {
-  R: 0xc41e3a,
-  L: 0xff6a00,
-  U: 0xf4f4f4,
-  D: 0xffd500,
-  F: 0x009e60,
-  B: 0x0051ba,
+const STICKER_TOKENS = {
+  R: "--cube-right",
+  L: "--cube-left",
+  U: "--cube-up",
+  D: "--cube-down",
+  F: "--cube-front",
+  B: "--cube-back",
 };
 
 const DEFAULT_VIEW = new THREE.Quaternion().setFromEuler(new THREE.Euler(0.52, -0.68, 0, "XYZ"));
@@ -112,22 +112,22 @@ export class CubeEngine {
   }
 
   private build() {
-    const body = new RoundedBoxGeometry(0.97, 0.97, 0.97, 3, 0.12);
-    const sticker = new RoundedBoxGeometry(0.82, 0.82, 0.03, 3, 0.012);
-    const bodyMat = new THREE.MeshStandardMaterial({ color: 0x0b0b0d, roughness: 0.35, metalness: 0.1 });
+    const palette = getComputedStyle(document.documentElement);
+    const body = new RoundedBoxGeometry(0.985, 0.985, 0.985, 4, 0.065);
+    const sticker = new RoundedBoxGeometry(0.905, 0.905, 0.018, 4, 0.045);
+    const bodyMat = new THREE.MeshStandardMaterial({ color: palette.getPropertyValue("--cube-body").trim(), roughness: 0.42, metalness: 0 });
     const stickerMats: Record<string, THREE.MeshPhysicalMaterial> = {};
-    for (const [k, c] of Object.entries(STICKER_COLORS)) {
+    for (const [k, token] of Object.entries(STICKER_TOKENS)) {
       stickerMats[k] = new THREE.MeshPhysicalMaterial({
-        color: c,
-        roughness: 0.28,
-        clearcoat: 0.6,
-        clearcoatRoughness: 0.2,
+        color: palette.getPropertyValue(token).trim(),
+        roughness: 0.34,
+        clearcoat: 0.28,
+        clearcoatRoughness: 0.32,
         emissive: 0x000000,
       });
     }
     // Inner core
-    const core = new THREE.Mesh(new THREE.BoxGeometry(2.6, 2.6, 2.6), bodyMat);
-    core.scale.setScalar(0.98);
+    const core = new THREE.Mesh(new THREE.SphereGeometry(0.65, 20, 16), bodyMat);
     this.root.add(core);
 
     for (let x = -1; x <= 1; x++)
@@ -151,8 +151,10 @@ export class CubeEngine {
           ];
           for (const [name, v, n] of faces) {
             if (v !== 1) continue;
-            const s = new THREE.Mesh(sticker, stickerMats[name]!.clone());
-            s.position.copy(n).multiplyScalar(0.49);
+            const material = stickerMats[name];
+            if (!material) continue;
+            const s = new THREE.Mesh(sticker, material.clone());
+            s.position.copy(n).multiplyScalar(0.497);
             s.lookAt(n.clone().multiplyScalar(2));
             s.userData["cubie"] = g;
             g.add(s);
@@ -315,7 +317,8 @@ export class CubeEngine {
     drag: THREE.Vector2,
     easy: boolean,
   ): Move | null {
-    const ni = [0, 1, 2].find((i) => g.normal.getComponent(i) !== 0)!;
+    const ni = [0, 1, 2].find((i) => g.normal.getComponent(i) !== 0);
+    if (ni === undefined) return null;
     const tangents = [0, 1, 2].filter((i) => i !== ni).map((i) => {
       const t = new THREE.Vector3();
       t.setComponent(i, 1);
@@ -327,8 +330,9 @@ export class CubeEngine {
       return this.toScreen(w).sub(base);
     });
     // Decompose drag = a*s0 + b*s1
-    const s0 = screen[0]!;
-    const s1 = screen[1]!;
+    const s0 = screen[0];
+    const s1 = screen[1];
+    if (!s0 || !s1) return null;
     const det = s0.x * s1.y - s1.x * s0.y;
     if (Math.abs(det) < 1e-3) return null;
     const a = (drag.x * s1.y - s1.x * drag.y) / det;
@@ -338,9 +342,12 @@ export class CubeEngine {
     const ratio = Math.min(ca, cb) / Math.max(ca, cb);
     if (ratio > (easy ? 0.8 : 0.6)) return null; // ambiguous diagonal → do nothing
     const useA = ca > cb;
-    const d = tangents[useA ? 0 : 1]!.clone().multiplyScalar(Math.sign(useA ? a : b));
+    const tangent = tangents[useA ? 0 : 1];
+    if (!tangent) return null;
+    const d = tangent.clone().multiplyScalar(Math.sign(useA ? a : b));
     const axisVec = new THREE.Vector3().crossVectors(g.normal, d);
-    const ai = [0, 1, 2].find((i) => Math.round(axisVec.getComponent(i)) !== 0)! as Axis;
+    const ai = [0, 1, 2].find((i) => Math.round(axisVec.getComponent(i)) !== 0) as Axis | undefined;
+    if (ai === undefined) return null;
     const dir = Math.sign(axisVec.getComponent(ai)) as 1 | -1;
     const layer = Math.round(g.cubie.position.getComponent(ai));
     const move = turnToMove(ai, layer, dir);
@@ -375,19 +382,20 @@ export class CubeEngine {
     // Speed up when moves pile up so fast typing (high TPS) never lags behind.
     const backlog = this.queue.length;
     const base = (Math.abs(quarters) === 2 ? 0.22 : 0.14) / speed;
-    const duration = backlog > 12 ? 0 : Math.max(0.025, base / (1 + backlog * 0.8));
+    const duration = Math.max(0.018, base / (1 + backlog * 0.3));
     this.anim = { pivot, axis: axisVec, target: (quarters * Math.PI) / 2, elapsed: 0, duration, members, done: item.resolve };
   }
 
   private finishAnim() {
-    const a = this.anim!;
+    const a = this.anim;
+    if (!a) return;
     a.pivot.quaternion.setFromAxisAngle(a.axis, a.target);
     a.pivot.updateMatrixWorld(true);
     for (const m of a.members) {
       this.root.attach(m);
       m.position.set(Math.round(m.position.x), Math.round(m.position.y), Math.round(m.position.z));
       const e = new THREE.Matrix4().makeRotationFromQuaternion(m.quaternion).elements;
-      for (let i = 0; i < 16; i++) e[i] = Math.round(e[i]!);
+      for (let i = 0; i < e.length; i++) e[i] = Math.round(e[i] ?? 0);
       m.quaternion.setFromRotationMatrix(new THREE.Matrix4().fromArray(e));
     }
     this.root.remove(a.pivot);
@@ -399,22 +407,22 @@ export class CubeEngine {
   private tick = () => {
     if (this.disposed) return;
     const dt = Math.min((this.clock.update(), this.clock.getDelta()), 0.05);
-    if (!this.anim && this.queue.length) this.startNext();
-    if (this.anim) {
+    let remaining = dt;
+    let guard = 0;
+    while ((this.anim || this.queue.length) && remaining > 0 && guard++ < 50) {
+      if (!this.anim) this.startNext();
       const a = this.anim;
-      a.elapsed += dt;
-      const t = a.duration <= 0 ? 1 : Math.min(1, a.elapsed / a.duration);
-      const ease = 1 - Math.pow(1 - t, 3);
+      if (!a) break;
+      const used = Math.min(remaining, a.duration - a.elapsed);
+      a.elapsed += used;
+      remaining -= used;
+      const t = Math.min(1, a.elapsed / a.duration);
+      // A finger turn accelerates then seats cleanly, without bounce or overshoot.
+      const ease = t * t * (3 - 2 * t);
       a.pivot.quaternion.setFromAxisAngle(a.axis, a.target * ease);
       this.dirty = true;
       if (t >= 1) {
         this.finishAnim();
-        // Chain the next move in the same frame so queued moves don't wait a frame each.
-        let guard = 0;
-        while (this.queue.length > 12 && guard++ < 50) {
-          this.startNext();
-          this.finishAnim();
-        }
       }
     }
     if (!this.gesture && (Math.abs(this.velocity.x) > 0.05 || Math.abs(this.velocity.y) > 0.05)) {

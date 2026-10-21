@@ -44,11 +44,11 @@ export function OfflineStatus({ state, compact }: { state: OfflineState; compact
 export function ScrambleDisplay({ scramble, loading, onNew }: { scramble: Move[]; loading: boolean; onNew: () => void }) {
   const text = scramble.join(" ");
   return (
-    <div className="flex items-center gap-1 px-4">
-      <p className="line-clamp-2 flex-1 text-center font-mono text-sm leading-snug sm:text-base">
+    <div className="grid grid-cols-[4.75rem_minmax(0,1fr)_4.75rem] items-center px-2 sm:px-4">
+      <p className="col-start-2 line-clamp-2 text-center font-mono text-sm leading-snug sm:text-base">
         {loading ? <span className="text-muted-foreground">Preparing scrambler…</span> : text || <span className="text-muted-foreground">Press Scramble to start</span>}
       </p>
-      <div className="flex gap-0.5">
+      <div className="col-start-3 flex justify-end gap-0.5">
         <Button variant="ghost" size="icon" aria-label="New scramble" disabled={loading} onClick={onNew}>
           <RefreshCw className="size-4" />
         </Button>
