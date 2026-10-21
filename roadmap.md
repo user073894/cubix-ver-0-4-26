@@ -5,7 +5,7 @@
 - [x] Rename the visible app and installation metadata to cubix.
 - [x] Unify standard face, slice, wide, and whole-cube moves and add keyboard controls.
 - [x] Remove Solve/move buttons; center the fixed-height play screen and move records to an overlay.
-- [ ] Center scramble independently of icons and compact desktop bottom buttons.
-- [ ] Start the solve on the first inspection turn and preserve 15/17-second penalties; test boundaries.
-- [ ] Refine the playable cube appearance and smooth physical turns without skipped queue animations.
-- [ ] Verify cube turns, timer records, and desktop/mobile layout.
+- [x] Center scramble independently of icons and compact desktop bottom buttons.
+- [x] Start the solve on the first inspection turn and preserve 15/17-second penalties; test boundaries.
+- [x] Refine the playable cube appearance and smooth physical turns without skipped queue animations.
+- [x] Verify cube turns, timer records, and desktop/mobile layout.
