@@ -107,6 +107,7 @@ export class CubeEngine {
     this.resize();
 
     canvas.addEventListener("pointerdown", this.onDown);
+    this.onMove = this.onMove.bind(this);
     canvas.addEventListener("pointermove", this.onMove);
     canvas.addEventListener("pointerup", this.onUp);
     canvas.addEventListener("pointercancel", this.onUp);
@@ -279,7 +280,7 @@ export class CubeEngine {
     }
   };
 
-  private onMove = (e: PointerEvent) => {
+  private onMove(e: PointerEvent) {
     const g = this.gesture;
     if (!g) return;
     if (g.kind === "orbit") {
@@ -305,7 +306,7 @@ export class CubeEngine {
     const move = this.resolveFaceGesture(g, drag, s.easy);
     this.gesture = { kind: "spent" };
     if (move) this.cb.onUserMove(move);
-  };
+  }
 
   private onUp = (e: PointerEvent) => {
     try {
