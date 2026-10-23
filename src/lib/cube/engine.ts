@@ -2,11 +2,13 @@ import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { moveToTurn, remapMove, turnToMove, type Axis, type Move } from "./moves";
+import { nearestCubeView, rigidRotationEnabled } from "./rotation";
 
 export interface EngineSettings {
   speed: number; // 0.5 .. 3
   sensitivity: number; // 0.5 .. 2
   easy: boolean;
+  rigidRotation: boolean;
 }
 
 export interface EngineCallbacks {
@@ -65,12 +67,12 @@ export class CubeEngine {
   private gesture: Gesture | null = null;
   private velocity = { x: 0, y: 0 };
   private recenterFrom: THREE.Quaternion | null = null;
+  private recenterTo = DEFAULT_VIEW.clone();
   private recenterT = 0;
   private dirty = true;
   private clock = new THREE.Timer();
   private ro: ResizeObserver;
   private raycaster = new THREE.Raycaster();
-  private highlight: { mats: THREE.MeshStandardMaterial[]; t: number } | null = null;
   private disposed = false;
 
   constructor(
@@ -105,6 +107,7 @@ export class CubeEngine {
     this.resize();
 
     canvas.addEventListener("pointerdown", this.onDown);
+    this.onMove = this.onMove.bind(this);
     canvas.addEventListener("pointermove", this.onMove);
     canvas.addEventListener("pointerup", this.onUp);
     canvas.addEventListener("pointercancel", this.onUp);
@@ -194,6 +197,8 @@ export class CubeEngine {
 
   /** Stop animations and restore every cubie to its solved home position. */
   reset() {
+    this.gesture = null;
+    this.velocity = { x: 0, y: 0 };
     const q = this.queue.splice(0);
     if (this.anim) {
       for (const m of this.anim.members) this.root.attach(m);
@@ -213,7 +218,7 @@ export class CubeEngine {
 
   /** Translate a screen-relative move (R = the face on the viewer's right) into the cube's real face. */
   viewMove(m: Move): Move {
-    const inv = this.root.quaternion.clone().invert();
+    const inv = nearestCubeView(this.root.quaternion).invert();
     return remapMove(m, (axis) => {
       const v = new THREE.Vector3();
       v.setComponent(axis, 1);
@@ -227,6 +232,7 @@ export class CubeEngine {
   recenter() {
     this.velocity = { x: 0, y: 0 };
     this.recenterFrom = this.root.quaternion.clone();
+    this.recenterTo.copy(DEFAULT_VIEW);
     this.recenterT = 0;
   }
 
@@ -252,12 +258,16 @@ export class CubeEngine {
 
   private onDown = (e: PointerEvent) => {
     if (this.gesture) return;
+    if (e.button !== 0) return;
+    this.root.updateMatrixWorld(true);
     this.renderer.domElement.setPointerCapture(e.pointerId);
     this.velocity = { x: 0, y: 0 };
     this.recenterFrom = null;
     this.raycaster.setFromCamera(this.ndc(e.clientX, e.clientY), this.camera);
     const hit = this.raycaster.intersectObjects(this.pickables, false)[0];
     if (hit && hit.face) {
+      // Moving cubies are not on stable layer coordinates: do not misread a swipe.
+      if (this.pendingCount() > 0) return;
       const inv = this.root.quaternion.clone().invert();
       const n = hit.face.normal.clone().transformDirection(hit.object.matrixWorld).applyQuaternion(inv);
       const a = [Math.abs(n.x), Math.abs(n.y), Math.abs(n.z)];
@@ -270,7 +280,7 @@ export class CubeEngine {
     }
   };
 
-  private onMove = (e: PointerEvent) => {
+  private onMove(e: PointerEvent) {
     const g = this.gesture;
     if (!g) return;
     if (g.kind === "orbit") {
@@ -286,13 +296,17 @@ export class CubeEngine {
       return;
     }
     if (g.kind !== "face") return;
+    if (this.pendingCount() > 0) {
+      this.gesture = { kind: "spent" };
+      return;
+    }
     const s = this.cb.getSettings();
     const drag = new THREE.Vector2(e.clientX - g.x, e.clientY - g.y);
     if (drag.length() < (s.easy ? 14 : 8)) return;
     const move = this.resolveFaceGesture(g, drag, s.easy);
     this.gesture = { kind: "spent" };
     if (move) this.cb.onUserMove(move);
-  };
+  }
 
   private onUp = (e: PointerEvent) => {
     try {
@@ -300,7 +314,12 @@ export class CubeEngine {
     } catch {
       /* noop */
     }
-    if (this.gesture?.kind !== "orbit") this.velocity = { x: 0, y: 0 };
+    if (this.gesture?.kind === "orbit" && this.rigidView()) {
+      this.velocity = { x: 0, y: 0 };
+      this.recenterFrom = this.root.quaternion.clone();
+      this.recenterTo.copy(nearestCubeView(this.root.quaternion, DEFAULT_VIEW));
+      this.recenterT = 0;
+    } else if (this.gesture?.kind !== "orbit") this.velocity = { x: 0, y: 0 };
     this.gesture = null;
   };
 
@@ -310,6 +329,11 @@ export class CubeEngine {
     const qx = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), dy * k);
     this.root.quaternion.premultiply(qy).premultiply(qx).normalize();
     this.dirty = true;
+  }
+
+  private rigidView() {
+    return rigidRotationEnabled(this.cb.getSettings().rigidRotation, window.innerWidth,
+      window.matchMedia("(pointer: fine)").matches, window.matchMedia("(hover: hover)").matches);
   }
 
   private resolveFaceGesture(
@@ -351,20 +375,7 @@ export class CubeEngine {
     const dir = Math.sign(axisVec.getComponent(ai)) as 1 | -1;
     const layer = Math.round(g.cubie.position.getComponent(ai));
     const move = turnToMove(ai, layer, dir);
-    if (move) this.flashLayer(ai, layer);
     return move;
-  }
-
-  private flashLayer(axis: Axis, layer: number) {
-    const mats: THREE.MeshStandardMaterial[] = [];
-    for (const c of this.cubies) {
-      if (Math.round(c.position.getComponent(axis)) !== layer) continue;
-      c.traverse((o) => {
-        const m = (o as THREE.Mesh).material as THREE.MeshPhysicalMaterial | undefined;
-        if (m && "clearcoat" in m) mats.push(m);
-      });
-    }
-    this.highlight = { mats, t: 0 };
   }
 
   // ---------- loop ----------
@@ -434,17 +445,9 @@ export class CubeEngine {
     if (this.recenterFrom) {
       this.recenterT = Math.min(1, this.recenterT + dt * 3);
       const e = 1 - Math.pow(1 - this.recenterT, 3);
-      this.root.quaternion.slerpQuaternions(this.recenterFrom, DEFAULT_VIEW, e);
+      this.root.quaternion.slerpQuaternions(this.recenterFrom, this.recenterTo, e);
       this.dirty = true;
       if (this.recenterT >= 1) this.recenterFrom = null;
-    }
-    if (this.highlight) {
-      const h = this.highlight;
-      h.t += dt;
-      const v = Math.max(0, 0.35 * (1 - h.t / 0.35));
-      h.mats.forEach((m) => m.emissive.setScalar(v));
-      this.dirty = true;
-      if (h.t > 0.35) this.highlight = null;
     }
     if (this.dirty) {
       this.renderer.render(this.scene, this.camera);

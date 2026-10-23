@@ -9,3 +9,6 @@
 - [x] Start the solve on the first inspection turn and preserve 15/17-second penalties; test boundaries.
 - [x] Refine the playable cube appearance and smooth physical turns without skipped queue animations.
 - [x] Verify cube turns, timer records, and desktop/mobile layout.
+- [x] Add optional laptop-only rigid view rotation.
+- [x] Remove turn highlights and repair confirmed gesture/rotation glitches.
+- [x] Test snapping, animation queues, and laptop/mobile interaction.

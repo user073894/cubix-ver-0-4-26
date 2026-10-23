@@ -183,8 +183,8 @@ export function CubeLabApp() {
   }, [onUserMove]);
 
   const engineSettings = useMemo(
-    () => ({ speed: settings.speed, sensitivity: settings.sensitivity, easy: settings.controls === "easy" }),
-    [settings.speed, settings.sensitivity, settings.controls],
+    () => ({ speed: settings.speed, sensitivity: settings.sensitivity, easy: settings.controls === "easy", rigidRotation: settings.rigidRotation }),
+    [settings.speed, settings.sensitivity, settings.controls, settings.rigidRotation],
   );
 
   const t = timer;
