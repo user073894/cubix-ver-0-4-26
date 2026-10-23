@@ -196,6 +196,8 @@ export class CubeEngine {
 
   /** Stop animations and restore every cubie to its solved home position. */
   reset() {
+    this.gesture = null;
+    this.velocity = { x: 0, y: 0 };
     const q = this.queue.splice(0);
     if (this.anim) {
       for (const m of this.anim.members) this.root.attach(m);
@@ -293,6 +295,10 @@ export class CubeEngine {
       return;
     }
     if (g.kind !== "face") return;
+    if (this.pendingCount() > 0) {
+      this.gesture = { kind: "spent" };
+      return;
+    }
     const s = this.cb.getSettings();
     const drag = new THREE.Vector2(e.clientX - g.x, e.clientY - g.y);
     if (drag.length() < (s.easy ? 14 : 8)) return;
