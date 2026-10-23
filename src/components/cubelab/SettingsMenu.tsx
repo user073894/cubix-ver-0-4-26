@@ -9,7 +9,7 @@ import {
 import type { Settings } from "@/lib/storage";
 import type { OfflineState } from "@/lib/pwa";
 import { OfflineStatus } from "./panels";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 export const APP_VERSION = "0.3.26";
 
@@ -49,6 +49,14 @@ interface Props {
 }
 
 export function SettingsMenu({ open, onOpenChange, settings: s, update, offline, onRecenter, onClearHistory, onTutorial }: Props) {
+  const [laptopControls, setLaptopControls] = useState(false);
+  useEffect(() => {
+    const media = window.matchMedia("(min-width: 1024px) and (pointer: fine) and (hover: hover)");
+    const sync = () => setLaptopControls(media.matches);
+    sync();
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, []);
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-sm">
@@ -59,6 +67,11 @@ export function SettingsMenu({ open, onOpenChange, settings: s, update, offline,
           <Row label="Controls" hint={s.controls === "easy" ? "Forgiving swipes" : "Shorter, stricter swipes"}>
             <Seg value={s.controls} options={[["easy", "Easy"], ["precise", "Precise"]]} onChange={(v) => update({ controls: v })} />
           </Row>
+          {laptopControls && (
+            <Row label="Rigid rotation">
+              <Switch aria-label="Rigid rotation" checked={s.rigidRotation} onCheckedChange={(v) => update({ rigidRotation: v })} />
+            </Row>
+          )}
           <Row label="Timer only" hint="For a real cube: clock only, Space to start/stop">
             <Switch checked={s.timerOnly} onCheckedChange={(v) => update({ timerOnly: v })} />
           </Row>

@@ -3,6 +3,7 @@ import type { Solve } from "./stats";
 
 export interface Settings {
   controls: "easy" | "precise";
+  rigidRotation: boolean;
   inspection: boolean;
   timerOnly: boolean;
   holdToStart: boolean;
@@ -16,6 +17,7 @@ export interface Settings {
 
 export const DEFAULT_SETTINGS: Settings = {
   controls: "easy",
+  rigidRotation: false,
   inspection: false,
   timerOnly: false,
   holdToStart: true,
