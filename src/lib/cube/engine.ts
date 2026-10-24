@@ -188,6 +188,8 @@ export class CubeEngine {
   // ---------- public API ----------
   enqueue(moves: Move[]): Promise<void> {
     if (!moves.length) return Promise.resolve();
+    // A stored hit point is stale even if the queued turn completes before pointermove.
+    if (this.gesture?.kind === "face") this.gesture = { kind: "spent" };
     const ps = moves.map((move) => new Promise<void>((resolve) => this.queue.push({ move, resolve })));
     this.cb.onQueueChange?.(this.pendingCount());
     return Promise.all(ps).then(() => undefined);
@@ -447,7 +449,7 @@ export class CubeEngine {
         this.finishAnim();
       }
     }
-    if (!this.gesture && (Math.abs(this.velocity.x) > 0.05 || Math.abs(this.velocity.y) > 0.05)) {
+    if (!this.gesture && !this.recenterFrom && (Math.abs(this.velocity.x) > 0.05 || Math.abs(this.velocity.y) > 0.05)) {
       this.rotateView(this.velocity.x, this.velocity.y);
       const damp = Math.exp(-7 * dt);
       this.velocity.x *= damp;
