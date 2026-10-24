@@ -18,4 +18,5 @@
 - Service worker via vite-plugin-pwa generateSW, registered only from src/lib/pwa.ts with preview/iframe guards; runtime caches warmed after first control.
 - All user turns enter the timer hook before logical/visual move application; inspection penalties are captured at that instant and recorded on stop, so orbit and generated scrambles never start timing.
 - Cube appearance reads semantic cube palette tokens from global CSS; layer animations carry frame time through the queue without dropping turns, and the inner core stays inside the center cubie to avoid intersecting moving layers.
-- Camera snapping and keyboard face mapping use the 24 proper cube orientations to prevent duplicate axes; rigid snapping is gated by laptop width and fine hover-capable pointer, never touch-only tablets.
+- Camera snapping and keyboard face mapping use the 24 proper cube orientations to prevent duplicate axes; rigid snapping uses its own two-face base view and is gated by laptop width and fine hover-capable pointer, never touch-only tablets.
+- Records graph data is derived from saved solves through the shared penalty/average functions; never store a second results series that could diverge from history edits.

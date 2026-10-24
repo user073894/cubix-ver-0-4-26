@@ -7,6 +7,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Cube3D, type Cube3DHandle } from "./Cube3D";
 import { AppHeader, ScrambleDisplay, SolveHistory, StatisticsPanel } from "./panels";
 import { SettingsMenu } from "./SettingsMenu";
+import { SolveGraph } from "./SolveGraph";
 import { useTimer } from "./useTimer";
 import { KEY_GUIDE, keyToMove } from "./keyboard";
 import { DEFAULT_SETTINGS, loadSettings, loadSolves, saveSettings, saveSolves, type Settings } from "@/lib/storage";
@@ -270,6 +271,7 @@ export function CubeLabApp() {
           <SheetHeader><SheetTitle>Records</SheetTitle></SheetHeader>
           <div className="flex flex-col gap-4 px-4 pb-6">
             <StatisticsPanel solves={solves} format={settings.timeFormat} />
+            <SolveGraph solves={solves} format={settings.timeFormat} />
             <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Recent solves</h2>
             <SolveHistory
               solves={solves}

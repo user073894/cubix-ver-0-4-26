@@ -1,4 +1,7 @@
-import { Matrix4, Quaternion, Vector3 } from "three";
+import { Euler, Matrix4, Quaternion, Vector3 } from "three";
+
+export const FREE_VIEW = new Quaternion().setFromEuler(new Euler(0.52, -0.68, 0, "XYZ"));
+export const RIGID_VIEW = new Quaternion().setFromEuler(new Euler(0.52, 0, 0, "XYZ"));
 
 /** The 24 proper cube orientations, never mirrored or duplicate face mappings. */
 const directions = [
