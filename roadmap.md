@@ -12,3 +12,6 @@
 - [x] Add optional laptop-only rigid view rotation.
 - [x] Remove turn highlights and repair confirmed gesture/rotation glitches.
 - [x] Test snapping, animation queues, and laptop/mobile interaction.
+- [ ] Add a solve-time graph in Records with penalty-aware results.
+- [ ] Set rigid views to top/front two-face angles, including toggle and recenter.
+- [ ] Repair confirmed glitches and verify Records and cube interaction on desktop/mobile.

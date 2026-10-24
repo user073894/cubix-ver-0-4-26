@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { Euler, Quaternion, Vector3 } from "three";
-import { CUBE_ORIENTATIONS, nearestCubeView, rigidRotationEnabled } from "./rotation";
+import { CUBE_ORIENTATIONS, RIGID_VIEW, nearestCubeView, rigidRotationEnabled } from "./rotation";
 
 describe("rigid laptop rotation", () => {
   it("is enabled only for laptop-sized screens with mouse controls", () => {
@@ -25,5 +25,18 @@ describe("rigid laptop rotation", () => {
     const axes = [new Vector3(1, 0, 0), new Vector3(0, 1, 0), new Vector3(0, 0, 1)]
       .map((v) => v.applyQuaternion(inverse).toArray().map(Math.abs).indexOf(1));
     expect(new Set(axes).size).toBe(3);
+  });
+  it("settles with only the top and front visible across all 24 orientations", () => {
+    const normals = [new Vector3(1, 0, 0), new Vector3(-1, 0, 0), new Vector3(0, 1, 0),
+      new Vector3(0, -1, 0), new Vector3(0, 0, 1), new Vector3(0, 0, -1)];
+    for (const orientation of CUBE_ORIENTATIONS) {
+      const view = RIGID_VIEW.clone().multiply(orientation);
+      const visible = normals.map((n) => n.clone().applyQuaternion(view)).filter((n) => n.z > 0.001);
+      expect(visible).toHaveLength(2);
+      expect(visible.every((n) => Math.abs(n.x) < 0.000001)).toBe(true);
+      expect(nearestCubeView(view, RIGID_VIEW).angleTo(view)).toBeLessThan(0.000001);
+    }
+    expect(new Vector3(0, 1, 0).applyQuaternion(RIGID_VIEW).z).toBeGreaterThan(0);
+    expect(new Vector3(0, 0, 1).applyQuaternion(RIGID_VIEW).z).toBeGreaterThan(0);
   });
 });

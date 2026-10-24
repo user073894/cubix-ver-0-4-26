@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { moveToTurn, remapMove, turnToMove, type Axis, type Move } from "./moves";
-import { nearestCubeView, rigidRotationEnabled } from "./rotation";
+import { FREE_VIEW, RIGID_VIEW, nearestCubeView, rigidRotationEnabled } from "./rotation";
 
 export interface EngineSettings {
   speed: number; // 0.5 .. 3
@@ -26,7 +26,7 @@ const STICKER_TOKENS = {
   B: "--cube-back",
 };
 
-const DEFAULT_VIEW = new THREE.Quaternion().setFromEuler(new THREE.Euler(0.52, -0.68, 0, "XYZ"));
+const DEFAULT_VIEW = FREE_VIEW;
 
 interface QueueItem {
   move: Move;
@@ -74,6 +74,7 @@ export class CubeEngine {
   private ro: ResizeObserver;
   private raycaster = new THREE.Raycaster();
   private disposed = false;
+  private rigidActive = false;
 
   constructor(
     private container: HTMLElement,
@@ -98,7 +99,8 @@ export class CubeEngine {
     this.scene.add(key);
 
     this.camera.position.set(0, 0, 10);
-    this.root.quaternion.copy(DEFAULT_VIEW);
+    this.rigidActive = this.rigidView();
+    this.root.quaternion.copy(this.rigidActive ? RIGID_VIEW : DEFAULT_VIEW);
     this.scene.add(this.root);
     this.build();
 
@@ -232,7 +234,7 @@ export class CubeEngine {
   recenter() {
     this.velocity = { x: 0, y: 0 };
     this.recenterFrom = this.root.quaternion.clone();
-    this.recenterTo.copy(DEFAULT_VIEW);
+    this.recenterTo.copy(this.rigidView() ? RIGID_VIEW : DEFAULT_VIEW);
     this.recenterT = 0;
   }
 
@@ -317,7 +319,7 @@ export class CubeEngine {
     if (this.gesture?.kind === "orbit" && this.rigidView()) {
       this.velocity = { x: 0, y: 0 };
       this.recenterFrom = this.root.quaternion.clone();
-      this.recenterTo.copy(nearestCubeView(this.root.quaternion, DEFAULT_VIEW));
+      this.recenterTo.copy(nearestCubeView(this.root.quaternion, RIGID_VIEW));
       this.recenterT = 0;
     } else if (this.gesture?.kind !== "orbit") this.velocity = { x: 0, y: 0 };
     this.gesture = null;
@@ -417,6 +419,15 @@ export class CubeEngine {
 
   private tick = () => {
     if (this.disposed) return;
+    const rigid = this.rigidView();
+    if (rigid !== this.rigidActive) {
+      this.rigidActive = rigid;
+      this.gesture = null;
+      this.velocity = { x: 0, y: 0 };
+      this.recenterFrom = this.root.quaternion.clone();
+      this.recenterTo.copy(nearestCubeView(this.root.quaternion, rigid ? RIGID_VIEW : FREE_VIEW));
+      this.recenterT = 0;
+    }
     const dt = Math.min((this.clock.update(), this.clock.getDelta()), 0.05);
     let remaining = dt;
     let guard = 0;
