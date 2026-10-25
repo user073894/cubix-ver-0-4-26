@@ -13,7 +13,8 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
-  vite: {
+  vite: { 
+    base: '/rubix-ver-0-4-26/',
     worker: { format: "es" },
     plugins: [
       VitePWA({
