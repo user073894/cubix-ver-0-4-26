@@ -9,13 +9,11 @@ import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig({
   tanstackStart: {
-    // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
-    // nitro/vite builds from this
-    server: { entry: "server" },
+   appType: "spa", 
   },
   vite: { 
     base: '/cubix-ver-0-4-26/',
-    worker: { format: "yes" },
+    worker: { format: "es" },
     plugins: [
       VitePWA({
         strategies: "generateSW",
