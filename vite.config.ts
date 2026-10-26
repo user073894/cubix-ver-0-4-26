@@ -9,10 +9,11 @@ import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig({
   tanstackStart: {
-   appType: "spa", 
+    appType: "spa",
   },
   vite: { 
-    base: '/',
+    // This tells the 3D graphics and styles to look inside your folder name
+    base: './',
     worker: { format: "es" },
     plugins: [
       VitePWA({
