@@ -12,7 +12,7 @@ export default defineConfig({
    appType: "spa", 
   },
   vite: { 
-    base: '/cubix-ver-0-4-26/',
+    base: '/',
     worker: { format: "es" },
     plugins: [
       VitePWA({
