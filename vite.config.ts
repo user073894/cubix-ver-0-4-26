@@ -14,8 +14,8 @@ export default defineConfig({
     server: { entry: "server" },
   },
   vite: { 
-    base: '/',
-    worker: { format: "es" },
+    base: '/cubix-ver-0-4-26/',
+    worker: { format: "yes" },
     plugins: [
       VitePWA({
         strategies: "generateSW",
